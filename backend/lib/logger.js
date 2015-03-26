@@ -2,7 +2,7 @@ var log4js = require('log4js');
 
 var config = require('./../config/config');
 
-var layout = log4js.layouts.layout('pattern', config.logger.layout);
+var layout = log4js.layouts.layout('pattern', '%d{ABSOLUTE} %[[%p]%] %m');
 var consoleAppender = log4js.appenders.console(layout);
 
 log4js.configure({}); // Resetting default configuration

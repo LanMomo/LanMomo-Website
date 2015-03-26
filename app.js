@@ -23,6 +23,6 @@ if (process.env.NODE_ENV === 'dev') {
 //Routing
 require('./backend/routes/routes')(app);
 
-app.listen(config.server.port, function() {
-  logger.info('Server listening on port %s', config.server.port);
+app.listen(3000, function() {
+  logger.info('Server listening on port %s', 3000);
 });
