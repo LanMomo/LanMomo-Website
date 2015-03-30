@@ -122,10 +122,6 @@ var updateUser = function(req, res, emailVerification) {
   });
 };
 
-exports.index = function(req, res) {
-  res.sendFile('index.html', {root: __dirname + '/../../public/'});
-};
-
 exports.getAll = function(req, res) {
   User.find({active:true}).select('username firstname lastname type').exec()
   .then(function(users) {
