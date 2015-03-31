@@ -7,8 +7,8 @@ html, body {
   min-height: 100%;
 }
 .body {
-  padding-top: 70px; /* navbar height + padding */
-  padding-bottom: 130px; /* footer height + padding */
+  padding-top: 72px; /* navbar height (52px) + padding (20px) */
+  padding-bottom: 170px; /* footer height (120px) + padding (50px) */
 }
 .body > .body-nopadding {
   position: relative;
@@ -19,7 +19,7 @@ footer {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 120px;
   padding: 30px 0;
   border-top: 1px solid #0C0D0E;
   background-color: #1C1E22;
@@ -27,16 +27,25 @@ footer {
 footer a {
   white-space: nowrap;
 }
+footer ul {
+  text-align: center;
+}
+footer .social {
+  margin-top: 25px;
+}
+footer .social .fb-like.fb_iframe_widget span {
+  vertical-align: inherit !important; /* revert vertical-align:bottom */
+}
 @media (max-width: 768px) {
   .body {
-    padding-bottom: 210px;
+    padding-bottom: 250px; /* footer height (200px) + padding (50px) */
   }
   footer {
-    height: 160px;
+    height: 200px;
   }
-  footer ul {
+  footer .links {
     margin-top: 45px;
-    line-height: 2.5em;
+    line-height: 2em;
   }
 }
 /* END FOOTER */
