@@ -32,6 +32,23 @@ module.exports = {
     pc: 50,
     console: 15
   },
+  servers: {
+    games: {
+      csgo: 'Counter Strike: Global Offensive',
+      'csgo-gg': 'CS:GO: Arms race',
+      'csgo-comp': 'CS:GO: Competitive',
+      css: 'Counter Strike: Source',
+      kf: 'Killing Floor',
+      mumble: 'Serveur mumble pour les jeux',
+      mc: 'Minecraft',
+      mvm: 'TF2: Mann vs. Machine',
+      ph: 'TF2: Prop Hunt',
+      tf2: 'Team Fortress 2',
+      ttt: 'Garry\'s Mod: Trouble in Terrorist Town',
+      tmnf: 'TrackMania Nations Forever',
+      ut2004: 'Unreal Tournament 2004'
+    }
+  },
   games: {
     pc: [
       {
@@ -65,9 +82,19 @@ module.exports = {
         imagePath: 'assets/game_banners/tmnations.jpg'
       },
       {
+        title: 'Killing Floor',
+        description: 'FPS multijoueur coopératif développé par Tripwire Interactive où vous devez éliminer des hordes de zombies.',
+        imagePath: 'assets/game_banners/kf.jpg'
+      },
+      {
         title: 'Unreal Tournament 2004',
         description: 'FPS futuriste développé par Epic Games et Digital Extremes.',
         imagePath: 'assets/game_banners/ut2004.jpg'
+      },
+      {
+        title: 'Hearthstone',
+        description: 'Hearthstone: Heroes of Warcraft est un jeu de cartes à collectionner en ligne, édité et développé par Blizzard Entertainment.',
+        imagePath: 'assets/game_banners/hs.jpg'
       },
       {
         title: 'League of Legends',

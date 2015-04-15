@@ -9,6 +9,7 @@
 
     <link href="bower_components/bootswatch-dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="bower_components/components-font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="bower_components/angular-loading-bar/build/loading-bar.min.css" rel="stylesheet">
     <link href="assets/main.css" rel="stylesheet">
     <link href="assets/favicon.png" rel="icon">
 
@@ -33,6 +34,7 @@
                 <li ng-class="{ active: isActive('/') }"><a href="/"><i class="fa fa-home"></i> Accueil</a></li>
                 <li ng-class="{ active: isActive('/users') }"><a href="/users"><i class="fa fa-users"></i> Participants</a></li>
                 <li ng-class="{ active: isActive('/games') }"><a href="/games"><i class="fa fa-gamepad"></i> Jeux</a></li>
+                <li ng-class="{ active: isActive('/servers') }"><a href="/servers"><i class="fa fa-server"></i> Serveurs</a></li>
               </ul>
               <ul class="nav navbar-nav navbar-right">
                 <li ng-class="{ active: isActive('/subscribe') }"><a href="/subscribe"><i class="fa fa-pencil-square-o"></i> Inscription</a></li>
@@ -59,9 +61,14 @@
 
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.min.js"></script>
+    <script src="bower_components/angular-loading-bar/build/loading-bar.min.js"></script>
     <script src="bower_components/angular-route/angular-route.min.js"></script>
     <script src="bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="bower_components/moment/min/moment.min.js"></script>
+    <script src="bower_components/moment/locale/fr-ca.js"></script>
+    <script src="bower_components/angular-moment/angular-moment.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
