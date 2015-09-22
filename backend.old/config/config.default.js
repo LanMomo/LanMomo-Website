@@ -29,8 +29,8 @@ module.exports = {
   },
   types: ['pc', 'console'],
   maximum: {
-    pc: 50,
-    console: 15
+    pc: 96,
+    console: 32
   },
   servers: {
     games: {
