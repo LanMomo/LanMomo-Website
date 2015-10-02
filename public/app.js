@@ -176,7 +176,7 @@ app.controller('TicketsController', function($scope, $http, $location) {
     }
   };
 });
-app.controller('PayController', function($scope, $http) {
+app.controller('PayController', function($scope, $http, $window) {
   $http.get('/api/users/ticket')
     .success(function(data) {
       $scope.ticket = data.ticket;
@@ -202,7 +202,7 @@ app.controller('PayController', function($scope, $http) {
 
       $http.post('/api/tickets/pay', data)
         .success(function(data) {
-          // TODO
+          $window.location.href = data.redirect_url;
         })
         .error(function(data) {
           $scope.error = "too bad man"
@@ -251,6 +251,23 @@ app.controller('LogoutController', function ($scope, $http, $location) {
       $location.path('/');
     })
     .error(function(err, status) {
+      $scope.error = {message: err.error, status: status};
+    });
+});
+
+app.controller('ExecuteController', function ($scope, $http, $location, $routeParams) {
+  var data = {
+    'payment_id' : $routeParams.paymentId,
+    'payer_id' : $routeParams.PayerID
+  };
+
+  $http.put('/api/tickets/pay/execute', data)
+    .success(function(data) {
+      console.log(data);
+      $scope.message = data.message;
+    })
+    .error(function(err, status) {
+      console.log(err);
       $scope.error = {message: err.error, status: status};
     });
 });
@@ -341,9 +358,13 @@ app.config(function($routeProvider, $locationProvider, cfpLoadingBarProvider) {
     templateUrl: 'partials/tickets.html',
     controller: 'TicketsController'
   })
-  .when('/pay/:pay?', {
+  .when('/pay', {
     templateUrl: 'partials/pay.html',
     controller: 'PayController'
+  })
+  .when('/execute', {
+    templateUrl: 'partials/execute.html',
+    controller: 'ExecuteController'
   })
   .when('/map', {
     templateUrl: 'partials/map.html',

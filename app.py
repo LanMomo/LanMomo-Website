@@ -6,13 +6,34 @@ import re
 import hashlib
 import uuid
 
-from smtplib import SMTP
-from email.mime.text import MIMEText
-from flask import Flask, send_from_directory, jsonify, request, session
+from datetime import datetime
+
+from flask import Flask, send_from_directory, jsonify, request, session, redirect
+
+from database import db_session, init_db, init_engine
+from models import Ticket, Seat, User, Payment, Team, TeamUser
 
 import mail
-from database import db_session, init_db, init_engine
-from models import Ticket, Seat, User, Team, TeamUser
+from paypal import Paypal
+
+from paypalrestsdk import Payment as PaypalPayment
+
+ERR_INVALID_PAYPAL = """\
+Votre paiement n'a pas pu être vérifié ! Confirmez cette information sur
+ votre compte et contactez info@lanmomo.org ."""
+
+ERR_CREATE_PAYPAL = """\
+Votre paiement n'a pas pu être créé ! Veuillez réessayer et contactez
+ info@lanmomo.org si la situation persiste."""
+
+ERR_EXPIRED = """\
+Votre réservation de billet a expirée ! Aucun montant ne vous a été facturé."""
+
+ERR_COMPLETION = """\
+Une erreur est survenue lors de la mise à jour de votre billet."""
+
+MSG_SUCCESS_PAY = """\
+Félicitations, votre billet est maintenant payé !"""
 
 app = Flask(__name__)
 
@@ -164,16 +185,14 @@ def book_ticket():
     tickets_max = app.config['TICKETS_MAX']
     price = app.config['PRICING'][ticket_type]
 
-    try:
-        if Ticket.book_temp(user_id, ticket_type, price, tickets_max, seat):
-            ticket = Ticket.query.filter(Ticket.owner_id == user_id).one()
-            return jsonify({'ticket': ticket.as_pub_dict()}), 201
+    r = Ticket.book_temp(user_id, ticket_type, price, tickets_max, seat)
 
-        return jsonify({'error': 'Une erreur inconnue semble être survenue ' +
-                        'lors de la réservation de votre billet.'}), 409
-    except Exception as e:
-        # Conflict while booking ticket
-        return jsonify({'error': str(e)}), 409
+    if r[0]:
+        ticket = Ticket.query.filter(Ticket.owner_id == user_id).one()
+        return jsonify({'ticket': ticket.as_pub_dict()}), 201
+
+    # Conflict while booking ticket
+    return jsonify({'error': str(r[1])}), 409
 
 
 @app.route('/api/tickets/pay', methods=['POST'])
@@ -198,11 +217,145 @@ def pay_ticket():
         db_session.add(ticket)
         db_session.commit()
 
-        # TODO PAYPAL !!
+        paypal_payment = paypal_api.create(ticket)
+        payment = Payment(
+            amount=ticket.total, ticket_id=ticket.id,
+            paypal_payment_id=paypal_payment['paypal_payment_id'])
 
-        return jsonify({'message': 'Veuillez payer'}), 200
+        db_session.add(payment)
+        db_session.commit()
+
+        # TODO send email with paypal url
+
+        return jsonify({'redirect_url': paypal_payment['redirect_url']}), 201
     except Exception as e:
-        return jsonify({'error': str(e)}), 409  # Conflit (idk)
+        # TODO log error
+        print(str(e))
+        return jsonify({
+            'error': 'Une erreur est survenue lors de la création de' +
+            ' paiement'}), 500
+
+
+def err_execute_and_complete_payment(paypal_payment_id, paypal_payer_id):
+    """"Returns ERROR or None"""
+    # lock table tickets
+    db_session.execute('LOCK TABLES tickets WRITE, payments WRITE;')
+
+    payment = get_og_payment(paypal_payment_id)
+    if not payment:
+        return jsonify({'message': 'aucun paiement'}), 404
+
+    ticket = get_ticket_from_payment(payment)
+
+    err = get_err_from_ticket(ticket)
+    if err:
+        return err
+
+    prepare_payment_execution(payment, paypal_payer_id, ticket)
+
+    # Unlock tables (we do not want to lock while we query the paypal api)
+    db_session.execute('UNLOCK TABLES;')
+
+    paypal_payment = PaypalPayment.find(paypal_payment_id)
+    # Execute the payment
+    if (not paypal_payment.execute({"payer_id": paypal_payer_id}) or
+            paypal_payment.state.lower() != 'approved'):
+        # Could not execute or execute did not approve transaction
+        return jsonify({'message': ERR_INVALID_PAYPAL}), 402
+
+    # Validate payment is created
+    paypal_payment = PaypalPayment.find(paypal_payment_id)
+    if paypal_payment.state.lower() != 'created':
+        return jsonify({'message': ERR_CREATE_PAYPAL}), 402
+
+    return complete_purchase(ticket)
+
+
+@app.route('/api/tickets/pay/execute', methods=['PUT'])
+def execute_payment():
+    req = request.get_json()
+    paypal_payment_id = req['payment_id']
+    payer_id = req['payer_id']
+
+    try:
+        err = err_execute_and_complete_payment(paypal_payment_id, payer_id)
+        if err:
+            db_session.rollback()
+            db_session.execute('UNLOCK TABLES;')
+            return err
+
+        # Success
+        return jsonify({'message': MSG_SUCCESS_PAY}), 200
+    except Exception as e:
+        try:
+            db_session.rollback()
+            # try to unlock table
+            db_session.execute('UNLOCK TABLES;')
+        except:
+            pass
+        # TODO logging and error redirect
+        print(e)
+        return jsonify({'error': 'Une erreur inconnue est survenue.'}), 500
+
+
+def get_og_payment(paypal_payment_id):
+    try:
+        return Payment.query.filter(
+            Payment.paypal_payment_id == paypal_payment_id).one()
+    except:
+        return None
+
+
+def get_ticket_from_payment(payment):
+    try:
+        return Ticket.query.filter(
+            Payment.ticket_id == payment.ticket_id).one()
+    except:
+        return None
+
+
+def prepare_payment_execution(payment, payer_id, ticket):
+    # Set paypal's payer id to payment
+    payment.paypal_payer_id = payer_id
+    db_session.add(payment)
+
+    # Reserve seat for 30 more seconds if necessary
+    # time_after_tran = datetime.now() + timedelta(seconds=30)
+    # if ticket.reserved_until <= time_after_tran:
+    # TODO set new reservation
+    #    pass
+
+
+def get_err_from_ticket(ticket):
+    """Check if the payment is related to a valid reservation"""
+    if not ticket:
+        return jsonify({'error': 'aucun billet'}), 409
+
+    # Check if ticket is already paid
+    if ticket.paid:
+        return jsonify({'error': 'Votre billet a déjà été payé !'}), 409
+
+    # Check if reservation is expired
+    if ticket.reserved_until < datetime.now():
+        return jsonify({'error': ERR_EXPIRED}), 410
+
+    return None
+
+
+def complete_purchase(ticket):
+    try:
+        db_session.execute('LOCK TABLES tickets WRITE;')
+        # update ticket
+        ticket.paid = True
+        db_session.add(ticket)
+        db_session.commit()
+
+        db_session.execute('UNLOCK TABLES;')
+        # TODO send email with payment confirmation
+    except:
+        return jsonify({'message': ERR_COMPLETION}), 409
+
+    return None
 
 
 @app.route('/api/users/ticket', defaults={'user_id': None})
@@ -370,10 +523,15 @@ def login_in_please(message='Vous devez vous connecter.'):
 
 
 def setup(conf_path):
-    global app, games, tournaments
     app.config.from_pyfile(conf_path)
     init_engine(app.config['DATABASE_URI'])
     init_db()
+
+    paypal_api = Paypal()
+    paypal_api.configure(
+        client_id=app.config['PAYPAL_API_ID'],
+        client_secret=app.config['PAYPAL_API_SECRET'],
+        mode=app.config['PAYPAL_API_MODE'])
 
     with open('config/games.json') as data_file:
         games = json.load(data_file)
