@@ -18,7 +18,8 @@ app = Flask(__name__)
 
 
 def validate_signup_body(req):
-    needed = ['password', 'username', 'firstname', 'lastname', 'email', 'phone']
+    needed = ['password', 'username', 'firstname',
+              'lastname', 'email', 'phone']
     for n in needed:
         if n not in req.keys():
             return False
@@ -65,6 +66,7 @@ def func():
 def get_games():
     return jsonify(games), 200
 
+
 @app.route('/api/tournaments', methods=['GET'])
 def get_tournaments():
     return jsonify(tournaments), 200
@@ -80,9 +82,6 @@ def get_all_teams():
     return jsonify({'teams': pub_teams}), 200
 
 
-#@app.route('/api/teams/<team_name>')
-
-
 # TODO check if the game exists before creating a team
 @app.route('/api/teams/<game>/<name>', methods=['POST'])
 def add_team(game, name):
@@ -92,9 +91,9 @@ def add_team(game, name):
 
     team = Team(name, game, user_id)
     if team_exists(team.game, team.name) or \
-        captain_has_team(team.game, team.captain_id):
+            captain_has_team(team.game, team.captain_id):
         return jsonify({'message': 'Vous avez déja une équipe pour ce jeu ' +
-                    'ou le nom d\'équipe est deja utilisé'}), 400
+                        'ou le nom d\'équipe est deja utilisé'}), 400
 
     db_session.add(team)
     db_session.commit()
@@ -108,7 +107,7 @@ def delete_team(game, name):
     user_id = session['user_id']
 
     team = Team.query.filter(Team.game == game) \
-                            .filter(Team.name == name).first()
+        .filter(Team.name == name).first()
     if not team:
         return jsonify({'message': 'no team found'}), 500
 
