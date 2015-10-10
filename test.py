@@ -54,25 +54,34 @@ class GetHashTestCase(BaseTestCase):
                          "07435b24771d392631298647ba04e37d")
         binary_exp_hash = binascii.unhexlify(expected_hash)
         actual_hash = app.get_hash(password, salt)
-        print(binascii.hexlify(actual_hash))
 
         self.assertEqual(binary_exp_hash, actual_hash)
 
-    def get_hash_empty_password(self):
+    def test_get_hash_empty_password(self):
         password = ''
         salt = 'salt'
-        expected_hash = self.get_hash(password, salt)
+        expected_hash = ("2e3fce77cf8c4c7478a96d20"
+                         "7c1c39715892cac84a18cbec"
+                         "9b634f4bc22b390b48cd30a4"
+                         "df2e7ebbaee65c346a662c5be"
+                         "2d12441322f7a4bac821a382c4af091")
+        binary_exp_hash = binascii.unhexlify(expected_hash)
         actual_hash = app.get_hash(password, salt)
 
-        self.assertEqual(expected_hash, actual_hash)
+        self.assertEqual(binary_exp_hash, actual_hash)
 
-    def get_hash_empty_salt(self):
+    def test_get_hash_empty_salt(self):
         password = 'pass'
         salt = ''
-        expected_hash = self.get_hash(password, salt)
+        expected_hash = ("5b722b307fce6c944905d132"
+                         "691d5e4a2214b7fe92b73892"
+                         "0eb3fce3a90420a19511c301"
+                         "0a0e7712b054daef5b57bad5"
+                         "9ecbd93b3280f210578f547f4aed4d25")
+        binary_exp_hash = binascii.unhexlify(expected_hash)
         actual_hash = app.get_hash(password, salt)
 
-        self.assertEqual(expected_hash, actual_hash)
+        self.assertEqual(binary_exp_hash, actual_hash)
 
 
 if __name__ == '__main__':
