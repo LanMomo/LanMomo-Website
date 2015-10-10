@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 import uuid
+<<<<<<< HEAD
 import logging
+=======
+import binascii
+>>>>>>> Using hexdigest instead of digest
 
 from flask import Flask, send_from_directory, jsonify, request, session
 from logging import Formatter
@@ -52,6 +56,18 @@ def validate_signup_body(req):
     return True
 
 
+<<<<<<< HEAD
+=======
+def get_hash(password, salt):
+    m = hashlib.sha512()
+    m.update(salt.encode('utf8'))
+    m.update(password.encode('utf8'))
+    hex = m.hexdigest()
+    binary_hex_digest = binascii.unhexlify(hex)
+    return binary_hex_digest
+
+
+>>>>>>> Using hexdigest instead of digest
 def email_exists(email):
     return User.query.filter(User.email == email).count() > 0
 

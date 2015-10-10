@@ -3,6 +3,7 @@ import unittest
 from models import User
 from database import db_session, clear_db
 import hashlib
+import binascii
 
 
 class BaseTestCase(unittest.TestCase):
@@ -43,21 +44,21 @@ class EmailExistsTestCase(BaseTestCase):
 
 class GetHashTestCase(BaseTestCase):
 
-    def get_hash(self, password, salt):
-        m = hashlib.sha512()
-        m.update(salt.encode('utf8'))
-        m.update(password.encode('utf8'))
-        return m.digest()
-
     def test_get_hash(self):
         password = 'pass'
         salt = 'salt'
-        expected_hash = self.get_hash(password, salt)
+        expected_hash = ("4ab3490b9dd9fbcd6eb9ec6e"
+                         "2078a99c8de5d4d0ae1371fa"
+                         "ad97fdc83774dbeeec52c971"
+                         "c41971f71b131587c1becb17"
+                         "07435b24771d392631298647ba04e37d")
+        binary_exp_hash = binascii.unhexlify(expected_hash)
         actual_hash = app.get_hash(password, salt)
+        print(binascii.hexlify(actual_hash))
 
-        self.assertEqual(expected_hash, actual_hash)
+        self.assertEqual(binary_exp_hash, actual_hash)
 
-    def test_get_hash_empty_password(self):
+    def get_hash_empty_password(self):
         password = ''
         salt = 'salt'
         expected_hash = self.get_hash(password, salt)
@@ -65,7 +66,7 @@ class GetHashTestCase(BaseTestCase):
 
         self.assertEqual(expected_hash, actual_hash)
 
-    def test_get_hash_empty_salt(self):
+    def get_hash_empty_salt(self):
         password = 'pass'
         salt = ''
         expected_hash = self.get_hash(password, salt)
