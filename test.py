@@ -57,6 +57,14 @@ class GetHashTestCase(BaseTestCase):
 
         self.assertEqual(expected_hash, actual_hash)
 
+    def test_get_hash_empty_password(self):
+        password = ''
+        salt = 'salt'
+        expected_hash = self.get_hash(password, salt)
+        actual_hash = app.get_hash(password, salt)
+
+        self.assertEqual(expected_hash, actual_hash)
+
 
 if __name__ == '__main__':
     unittest.main()
