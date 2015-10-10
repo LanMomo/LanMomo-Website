@@ -2,6 +2,7 @@ import app
 import unittest
 from models import User
 from database import db_session, clear_db
+import hashlib
 
 
 class BaseTestCase(unittest.TestCase):
@@ -38,6 +39,23 @@ class EmailExistsTestCase(BaseTestCase):
         self.insert_email_fixture()
         actual = app.email_exists("test@test.com")
         self.assertTrue(actual)
+
+
+class GetHashTestCase(BaseTestCase):
+
+    def get_hash(self, password, salt):
+        m = hashlib.sha512()
+        m.update(salt.encode('utf8'))
+        m.update(password.encode('utf8'))
+        return m.digest()
+
+    def test_get_hash(self):
+        password = 'pass'
+        salt = 'salt'
+        expected_hash = self.get_hash(password, salt)
+        actual_hash = app.get_hash(password, salt)
+
+        self.assertEqual(expected_hash, actual_hash)
 
 
 if __name__ == '__main__':
