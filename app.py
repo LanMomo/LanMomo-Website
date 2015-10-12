@@ -52,6 +52,13 @@ def validate_signup_body(req):
     return True
 
 
+def get_hash(password, salt):
+    m = hashlib.sha512()
+    m.update(salt.encode('utf8'))
+    m.update(password.encode('utf8'))
+    return m.digest()
+
+
 def email_exists(email):
     return User.query.filter(User.email == email).count() > 0
 
