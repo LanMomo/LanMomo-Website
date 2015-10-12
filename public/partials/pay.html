@@ -16,7 +16,7 @@
       </div>
       <div class="col-xs-3 text-right">
         <span class="btn timer" ng-show="timerTime" ng-class="{ 'btn-warning': !timerTimeDanger, 'btn-danger': timerTimeDanger }" tooltip-placement="bottom" tooltip="Temps restant pour compléter votre transaction">
-            <i class="fa fa-clock-o"></i> <span class="time-container">{{ timerTime }}</span>
+            <i class="fa fa-clock-o"></i><span>Temps restant:  </span><span class="time-container">{{ timerTime }}</span>
         </span>
       </div>
     </div>
@@ -34,7 +34,7 @@
 
   <div ng-show="ticket" ng-hide="loading">
     <div class="alert alert-info">
-      <p><i class="fa fa-exclamation-circle"></i> Vous êtes maintenant prêt à compléter votre achat. Avant d'effectuer le paiement, assurez-vous que toute les informations sont exactes. Faites attention de ne pas manquer de temps (visible sur le minuteur en haut à droite de l'écran), sans quoi votre billet ne vous sera plus réservé et vous devrez recommencer la transaction.</p>
+      <p><i class="fa fa-exclamation-circle"></i> Vous êtes maintenant prêt à compléter votre achat. Avant d'effectuer le paiement, assurez-vous que toute les informations sont exactes. Votre billet est réservé pour 10 minutes.</p>
     </div>
 
     <table class="table table-striped table-with-total">
@@ -66,6 +66,10 @@
       </tr>
       </tbody>
     </table>
+
+    <p ng-show="timerTime" ng-class="{ 'text-warning': !timerTimeDanger, 'text-danger': timerTimeDanger }">
+      Votre billet est réservé pour encore <span class="time-container">{{ timerTime }}</span>
+    </p>
 
     <div class="panel panel-primary">
       <div class="panel-heading">
