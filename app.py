@@ -62,9 +62,7 @@ def get_hash(password, salt):
     m = hashlib.sha512()
     m.update(salt.encode('utf8'))
     m.update(password.encode('utf8'))
-    hex = m.hexdigest()
-    binary_hex_digest = binascii.unhexlify(hex)
-    return binary_hex_digest
+    return m.digest()
 
 
 >>>>>>> Using hexdigest instead of digest
