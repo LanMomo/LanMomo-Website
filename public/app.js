@@ -23,22 +23,27 @@ var app = angular.module('App', ['angular-loading-bar', 'ngAnimate', 'ngRoute', 
   }])
   .factory('Auth', function($rootScope, $http) {
     return {
-      login : function() {
+      login: function() {
         $rootScope.loggedIn = true;
         $rootScope.$broadcast('login');
       },
-      isLoggedIn : function() {
+      isLoggedIn: function() {
         return $rootScope.loggedIn;
       },
-      logout : function() {
+      logout: function() {
         $rootScope.loggedIn = false;
         $rootScope.$broadcast('login');
       },
       refresh: function() {
         $http.get('/api/login')
           .success(function(data) {
+            if (data.commit) {
+              $rootScope.staging = true;
+              $rootScope.commit = data.commit;
+            }
             if (data.logged_in) {
-              Auth.login();
+              $rootScope.loggedIn = true;
+              $rootScope.$broadcast('login');
             } else {
               $rootScope.loggedIn = false;
             }
@@ -109,14 +114,8 @@ var app = angular.module('App', ['angular-loading-bar', 'ngAnimate', 'ngRoute', 
   });
 
 app.run(function($rootScope, $http, Auth) {
-  // runs on first page load or refresh
-  $http.get('/api/login')
-    .success(function(data) {
-      $rootScope.loggedIn = data.logged_in;
-    })
-    .error(function(err, status) {
-      $rootScope.loggedIn = false;
-    });
+  // runs on first page load and refresh
+  Auth.refresh();
 });
 
 app.controller('NavbarController', function($scope, $location, Auth) {
