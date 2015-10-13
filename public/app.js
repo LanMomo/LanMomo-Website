@@ -22,26 +22,28 @@ var app = angular.module('App', ['angular-loading-bar', 'ngAnimate', 'ngRoute', 
     }
   }])
   .factory('Auth', function($rootScope, $http) {
-    var login = function() {
-      $rootScope.loggedIn = true;
-      $rootScope.$broadcast('login');
-    };
-
     return {
-      login : login,
-      isLoggedIn : function() {
+      login: function() {
+        $rootScope.loggedIn = true;
+        $rootScope.$broadcast('login');
+      },
+      isLoggedIn: function() {
         return $rootScope.loggedIn;
       },
-      logout : function() {
+      logout: function() {
         $rootScope.loggedIn = false;
         $rootScope.$broadcast('login');
       },
       refresh: function() {
         $http.get('/api/login')
-          .success(function(data, status, headers) {
-            $rootScope.commit = headers().commit;
+          .success(function(data) {
+            if (data.commit) {
+              $rootScope.staging = true;
+              $rootScope.commit = data.commit;
+            }
             if (data.logged_in) {
-              login();
+              $rootScope.loggedIn = true;
+              $rootScope.$broadcast('login');
             } else {
               $rootScope.loggedIn = false;
             }
@@ -49,11 +51,7 @@ var app = angular.module('App', ['angular-loading-bar', 'ngAnimate', 'ngRoute', 
           .error(function(err, status) {
             $rootScope.loggedIn = false;
           });
-      },
-      getCommit : function() {
-        console.log($rootScope);
-        return $rootScope.commit;
-      },
+      }
     }
   })
   .factory('Timer', function($rootScope, $interval) {
@@ -148,12 +146,6 @@ app.controller('GamesController', function($scope, $http) {
     .error(function(err, status) {
       $scope.error = {message: err.message, status: status};
     });
-});
-
-app.controller('StagingController', function($scope, Auth) {
-  $scope.$on('login', function() {
-    $scope.commit = Auth.getCommit();
-  });
 });
 
 app.controller('TournamentsController', function($scope, $http, $location) {

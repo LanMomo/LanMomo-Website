@@ -4,7 +4,6 @@ import mail
 import uuid
 import logging
 import os
-import json
 
 from os.path import isdir, dirname
 from datetime import datetime
@@ -13,8 +12,7 @@ from logging import Formatter
 from logging.handlers import TimedRotatingFileHandler
 
 # 3rd parties
-from flask import Flask, send_from_directory, jsonify, request, session, \
-    Response
+from flask import Flask, send_from_directory, jsonify, request, session
 
 from paypalrestsdk import Payment as PaypalPayment
 
@@ -593,12 +591,12 @@ def logout():
 
 @app.route('/api/login', methods=['GET'])
 def is_logged_in():
-    res = Response(
-        json.dumps({'logged_in': 'user_id' in session}),
-        mimetype='application/json', status=200)
+    json = {'logged_in': 'user_id' in session}
+
     if 'STAGING' in app.config:
-        res.headers['commit'] = app.config['CURRENT_COMMIT']
-    return res
+        json['commit'] = app.config['CURRENT_COMMIT']
+
+    return jsonify(json), 200
 
 
 @app.route('/api/login', methods=['POST'])
