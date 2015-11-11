@@ -70,3 +70,6 @@ app.dev.mysql.py
 
 # tmp directory for minification
 tmp
+
+# test.log
+test.log.*
