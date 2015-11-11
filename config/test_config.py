@@ -6,12 +6,6 @@ SECRET_KEY = 'secret'
 # Mailgun
 MAILGUN_USER = 'no-reply@lanmomo.org'
 MAILGUN_DOMAIN = 'lanmomo.org'
-MAILGUN_KEY = 'secret'
-
-# Paypal
-PAYPAL_API_ID = ''
-PAYPAL_API_SECRET = ''
-PAYPAL_API_MODE = 'sandbox'
 
 # Lanmomo
 TYPE_IDS = {'pc': 0, 'console': 1}
